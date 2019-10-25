@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
+set -e
+if [ -z "$1" ]
+then
+  echo "No argument supplied"
+  exit 1
+fi
+
 ORIG=$(pwd)
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+DIR="$( cd "$1" && pwd )"
 
 cd $DIR
 
