@@ -56,9 +56,6 @@ for i in ${DOC_RELEVANT[@]} ; do
     fi
 done
 
-# in the parent repo, .gitignore HTML_DIR unless it is already .gitignored
-touch ../.gitignore
-grep -q -F "${HTML_DIR}/" ../.gitignore || echo "${HTML_DIR}/" >> ../.gitignore
 
 # clean up any empty directories we may have created
 find ../$HTML_DIR -type d -empty -delete
