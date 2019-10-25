@@ -8,22 +8,24 @@ fi
 
 ORIG=$(pwd)
 DIR="$( cd "$1" && pwd )"
+SCRIPTPATH=$(dirname "$(readlink -f "$0")")
+PANDOC_OPTIONS="--filter ${SCRIPTPATH}/link_filter.py -s --mathjax"
 
 cd $DIR
 
 # make way for html
 HTML_DIR=$(basename $(dirname $DIR))_htmldoc
-rm --interactive=once -rf ../${HTML_DIR}
-mkdir -p ../${HTML_DIR}
+rm --interactive=once -rf ${HTML_DIR}
+mkdir -p ${HTML_DIR}
 
 # mimic parent repo's directory structure in ../$HTML_DIR
-PARENT_REPO_CACHED_FILES=$(cd .. && git ls-files)
+PARENT_REPO_CACHED_FILES=$( git ls-files)
 
 echo copying directory structure...
 for i in ${PARENT_REPO_CACHED_FILES[@]} ; do
 
-    FROM="../$(dirname $i)"
-    TO="../$HTML_DIR/$(dirname $i)"
+    FROM="$(dirname $i)"
+    TO="$HTML_DIR/$(dirname $i)"
     printf "    %35s" "$FROM"
     printf "  --mkdir-->"
     printf "    %35s\n" "$TO"
@@ -31,22 +33,27 @@ for i in ${PARENT_REPO_CACHED_FILES[@]} ; do
 done
 
 # discover docs in parent repo
-PARENT_REPO_DOCUMENTATION=$(find .. | egrep '\.md$' | egrep -v '\./md_htmldoc')
-DOC_RELEVANT=$(python $DIR/get_references.py $PARENT_REPO_DOCUMENTATION)
+PARENT_REPO_DOCUMENTATION=$(find . | egrep '\.(md|tex)$' | egrep -v '\./md_htmldoc')
+DOC_RELEVANT=$(python $SCRIPTPATH/get_references.py $PARENT_REPO_DOCUMENTATION)
 
 # for each documentation-relevant file
 echo extracting docs...
 for i in ${DOC_RELEVANT[@]} ; do
 
     FROM=$i
-    TO=${i/\.\./../$HTML_DIR}
+    TO=${HTML_DIR}/${i}
 
     if [[ $i == *.md ]] ; then
         # generate html, replaicng .md links with .html links
         printf "    %35s" $FROM
         printf " --pandoc--> "
         printf "%-35s\n" ${TO/\.md/.html}
-        pandoc -s $FROM --filter link_filter.py -o ${TO/\.md/.html}
+        pandoc ${PANDOC_OPTIONs} $FROM -o ${TO/\.md/.html}
+	elif [[ $i == *.tex ]] ; then
+        printf "    %35s" $FROM
+        printf " --pandoc--> "
+        printf "%-35s\n" ${TO/\.tex/.html}
+        pandoc ${PANDOC_OPTIONS} -f latex $FROM -o ${TO/\.tex/.html}
     else
         # copy hyperlinked files
         printf "    %35s" $FROM
