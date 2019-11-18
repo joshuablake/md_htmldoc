@@ -9,7 +9,7 @@ fi
 ORIG=$(pwd)
 DIR="$( cd "$1" && pwd )"
 SCRIPTPATH=$(dirname "$(readlink -f "$0")")
-PANDOC_OPTIONS="--filter ${SCRIPTPATH}/link_filter.py -s --mathjax"
+PANDOC_OPTIONS="--filter ${SCRIPTPATH}/link_filter.py --standalone --mathjax --css=/home/joshuab/pandoc.css --to=html5 --smart"
 
 cd $DIR
 
@@ -36,6 +36,9 @@ done
 PARENT_REPO_DOCUMENTATION=$(find . | egrep '\.(md|tex)$' | egrep -v '\./md_htmldoc')
 DOC_RELEVANT=$(python $SCRIPTPATH/get_references.py $PARENT_REPO_DOCUMENTATION)
 
+echo docs...
+echo "${DOC_RELEVANT}"
+
 # for each documentation-relevant file
 echo extracting docs...
 for i in ${DOC_RELEVANT[@]} ; do
@@ -48,7 +51,7 @@ for i in ${DOC_RELEVANT[@]} ; do
         printf "    %35s" $FROM
         printf " --pandoc--> "
         printf "%-35s\n" ${TO/\.md/.html}
-        pandoc ${PANDOC_OPTIONs} $FROM -o ${TO/\.md/.html}
+        pandoc ${PANDOC_OPTIONS} $FROM -o ${TO/\.md/.html}
 	elif [[ $i == *.tex ]] ; then
         printf "    %35s" $FROM
         printf " --pandoc--> "
@@ -65,6 +68,6 @@ done
 
 
 # clean up any empty directories we may have created
-find ../$HTML_DIR -type d -empty -delete
+find $HTML_DIR -type d -empty -delete
 
 cd $ORIG

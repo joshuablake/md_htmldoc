@@ -19,11 +19,7 @@ for arg in sys.argv[1:]:
     for i, line in enumerate(open(arg)):
         for match in re.finditer(pattern, line):
             for group in match.groups():
-                ref_file = '{}/{}'.format(dirname, group)
-                if os.path.exists(ref_file):
-                    doc_relevant.add(ref_file)
-                else:
-                    sys.stderr.write("ignoring reference to nonlocal file: {}{}".format(ref_file, os.linesep))
+                doc_relevant.add(arg)
 
 for item in doc_relevant:
     print(item)
